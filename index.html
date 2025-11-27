@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arkadaş Olalım mı?</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom Tailwind Configuration for smooth transitions and font -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-pink': '#FF69B4', // Hot Pink
+                        'secondary-pink': '#FFC0CB', // Light Pink
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Ensuring full screen black background and centering */
+        body {
+            background-color: black;
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.5s;
+        }
+
+        /* Base style for the yes button for smooth scaling */
+        #yesButton {
+            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Smooth easing */
+            transform-origin: center;
+        }
+
+        /* CSS for the heart and butterfly animation particles */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            opacity: 0;
+            animation: fly-up 3s forwards;
+        }
+
+        @keyframes fly-up {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+                font-size: 1.5rem;
+            }
+            100% {
+                transform: translateY(-200vh) rotate(360deg);
+                opacity: 0;
+                font-size: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+
+    <div id="mainContainer" class="flex flex-col items-center justify-center space-y-10 p-4 w-full max-w-lg">
+        
+        <!-- The Main Question -->
+        <h1 id="questionText" class="text-4xl sm:text-5xl font-extrabold text-white text-center tracking-tight">
+            Selam Rümeysa Arkadaş Olalım Mı?
+        </h1>
+
+        <!-- Buttons Container -->
+        <div id="buttonsContainer" class="flex flex-col items-center space-y-6 w-full">
+            
+            <!-- Yes Button (Initial size is large, will grow) -->
+            <button id="yesButton" 
+                    class="bg-primary-pink hover:bg-pink-600 text-white font-extrabold py-4 px-12 rounded-full shadow-2xl shadow-primary-pink/50 transition duration-300 ease-in-out transform hover:scale-105 active:scale-95 text-2xl sm:text-3xl"
+                    onclick="handleYesClick()">
+                Evet!
+            </button>
+            
+            <!-- No Button -->
+            <button id="noButton" 
+                    class="bg-gray-700 hover:bg-gray-600 text-gray-300 font-medium py-3 px-8 rounded-full transition duration-300 active:scale-95 text-lg"
+                    onclick="handleNoClick()">
+                Hayır :(
+            </button>
+        </div>
+
+        <!-- Animation Container - This will host the flying hearts/butterflies -->
+        <div id="animationContainer" class="absolute inset-0 overflow-hidden pointer-events-none"></div>
+
+    </div>
+
+    <script>
+        // Global variables for game logic
+        let noClickCount = 0;
+        const maxClicks = 7;
+        const yesButton = document.getElementById('yesButton');
+        const noButton = document.getElementById('noButton');
+        const questionText = document.getElementById('questionText');
+        const animationContainer = document.getElementById('animationContainer');
+        const mainContainer = document.getElementById('mainContainer');
+
+        // Initial list of messages to show on 'No' clicks
+        const noMessages = [
+            "Hayır",
+            "Lütfen bir daha düşün...",
+            "Emin misin?",
+            "Son kararın bu mu?🥺",
+            "Neden ki? Sadece 'Evet'e tıkla!",
+            "Bence 'Evet' daha iyi bir fikir.",
+            "LÜTFEN! 💖"
+        ];
+
+        /**
+         * Handles the 'No' button click logic.
+         * Increases the 'Yes' button size and eventually removes the 'No' button.
+         */
+        function handleNoClick() {
+            if (noClickCount < maxClicks) {
+                noClickCount++;
+
+                // 1. Calculate the new scale factor (starts at 1, grows by 0.35 each time)
+                const scaleFactor = 1 + noClickCount * 0.35;
+                
+                // 2. Update the 'Yes' button's scale
+                yesButton.style.transform = `scale(${scaleFactor})`;
+                
+                // 3. Update the 'No' button text
+                if (noClickCount <= noMessages.length) {
+                    noButton.textContent = noMessages[noClickCount - 1];
+                }
+
+                // 4. Update its size to shrink it slightly as it becomes less important
+                noButton.style.fontSize = `${1.2 - noClickCount * 0.1}rem`;
+                
+                // 5. Final click logic
+                if (noClickCount === maxClicks) {
+                    // Hide the 'No' button and finalize the Yes button size
+                    noButton.classList.add('hidden');
+                    yesButton.style.transform = `scale(3.5)`; // Make it very large on the final step
+                    yesButton.textContent = "EVET! Sonsuza Dek!"; // Change text
+                    yesButton.classList.remove('py-4', 'px-12');
+                    yesButton.classList.add('py-6', 'px-16', 'text-4xl');
+                    
+                    // Center the main container vertically again with only the Yes button
+                    mainContainer.classList.add('justify-center');
+                }
+            }
+        }
+
+        /**
+         * Handles the 'Yes' button click logic.
+         * Triggers the butterfly and heart animation.
+         */
+        function handleYesClick() {
+            // 1. Clean up the UI
+            noButton.classList.add('hidden');
+            yesButton.classList.add('opacity-0', 'pointer-events-none'); // Hide the button instantly
+
+            // 2. Display the confirmation message
+            questionText.textContent = "🥳 Harika! En iyi arkadaşlarız! 🥳";
+            questionText.classList.remove('text-white');
+            questionText.classList.add('text-primary-pink', 'text-6xl', 'animate-pulse');
+            
+            // 3. Trigger the animation
+            startConfettiAnimation();
+        }
+
+        /**
+         * Creates and launches the heart and butterfly particles.
+         */
+        function startConfettiAnimation() {
+            const particleTypes = ['💖', '✨', '🦋', '❤️', '🌟', '🌸'];
+            const numParticles = 80;
+
+            // Get the center of the viewport
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+
+            for (let i = 0; i < numParticles; i++) {
+                const particle = document.createElement('span');
+                
+                // Select a random particle type
+                particle.textContent = particleTypes[Math.floor(Math.random() * particleTypes.length)];
+                
+                particle.classList.add('particle');
+                
+                // Position the particle randomly around the center
+                const xOffset = (Math.random() - 0.5) * 200; // -100px to +100px
+                const yOffset = (Math.random() - 0.5) * 200; 
+
+                particle.style.left = `${centerX + xOffset}px`;
+                particle.style.top = `${centerY + yOffset}px`;
+                
+                // Adjust animation delay and duration for a scattered effect
+                particle.style.animationDelay = `${Math.random() * 0.5}s`;
+                particle.style.animationDuration = `${2.5 + Math.random() * 1.5}s`;
+
+                animationContainer.appendChild(particle);
+
+                // Remove particle after animation finishes
+                particle.addEventListener('animationend', () => {
+                    particle.remove();
+                });
+            }
+        }
+
+        // Initialize button transform style explicitly
+        window.onload = () => {
+             // Set the initial scale to 1 for smooth transitions to start
+             yesButton.style.transform = 'scale(1)'; 
+        };
+    </script>
+</body>
+</html>
